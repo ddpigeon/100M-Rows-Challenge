@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -17,6 +18,7 @@ struct Stats {
 };
 
 int main() {
+    auto begintime = std::chrono::high_resolution_clock().now();
     ifstream file("measurements.txt");
     if (!file.is_open()) {
         cerr << "Error opening file" << endl;
@@ -52,6 +54,12 @@ int main() {
                   << "Max: " << stats.max << "\n"
                   << setprecision(10) << "Average: " << average << "\n" << endl;
     }
+
+    auto endtime = std::chrono::high_resolution_clock().now();
+    auto total_time = std::chrono::duration_cast<std::chrono::milliseconds>(endtime - begintime);
+
+    std::cout << "time = " << total_time.count() << '\n';
+
 
     return 0;
 }
