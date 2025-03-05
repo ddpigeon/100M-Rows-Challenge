@@ -4,10 +4,10 @@
 #include <iostream>
 #include <cstring>
 #include <chrono>
-#include <set>
 #include <thread>
 using ll = long long;
-const int numproc = 12;
+const int numproc = 8;
+// change number of processors to whatever you have
 
 typedef struct temperature_data {
     ll sum;
@@ -23,20 +23,16 @@ typedef struct mmap_range {
 
 using ufm = boost::unordered::unordered_flat_map<std::string, tdata>;
 ufm temps;
-//std::set<ll> lc;
-//std::mutex lc_mutex;
 
 void process_range(mmap_range a, ufm &local_temps) {
-    // longest line is 28 for me so I'll just take say 35 chars and parse(?)
     
     const char* startpt = a.start;
-    //std::cout << "Thread processing range from " << (ll) startpt << " to " << (ll) a.end << "\n";
     int ctr = 0;
     while (startpt < a.end) {
+        // longest line is 28 for me so I've parse with 35 characters
+        // If there's a longer line, change the 35 to some bigger number
         const char* semipos = static_cast<const char*>(memchr(startpt, ';', 35));
         const char* lineend = static_cast<const char*>(memchr(semipos, '\n', 7));
-        //std::lock_guard<std::mutex> lock(lc_mutex);
-        //lc.insert((ll) lineend);
 
         std::string city(startpt, semipos - startpt);
         int temperature = (atoi(semipos+1) * 10);
@@ -56,7 +52,6 @@ void process_range(mmap_range a, ufm &local_temps) {
 
         startpt = lineend + 1;
     }
-    //std::cout << "Done\n";
 }
 
 void parallel_process(std::array<mmap_range, numproc> &ranges) {
@@ -118,5 +113,4 @@ int main() {
     auto total_time = std::chrono::duration_cast<std::chrono::milliseconds>(endtime - begintime);
 
     std::cout << "time = " << total_time.count() << " ms\n";
-    //std::cout << tcount << '\n';
 }
